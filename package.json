@@ -1,0 +1,14 @@
+{
+  "name": "OverTier",
+  "version": "1.0.0",
+  "description": "Overwatch API",
+  "main": "index.js",
+  "repository": "https://github.com/ynifamily3/OverTier.git",
+  "author": "Jongkeun Choi <ynifamily3@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "dotenv": "^7.0.0",
+    "node-telegram-bot-api": "^0.30.0"
+  }
+}
