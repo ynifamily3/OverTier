@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const cheerio = require('cheerio');
 const dotenv = require('dotenv');
 const fetch = require("node-fetch");
+const request = require('request');
 
 dotenv.config();
 
@@ -30,27 +31,16 @@ async function getPlayerInfo(url) {
 }
 
 function parsePlayerInfo(text) {
-    let playerInfo = {
-        profilePhoto:'',
-        playerName:'',
-        numberOfWins:'',
-        platform:platform,
-        playerlevel:0,
-        playerRecommandLevel:0,
-        playerRating:500
-    };
-
-    //<h1 class="header-masthead">나마스떼</h1>
-    //console.log(text);
-    //<div class="u-vertical-center">
-    //const {playerlevel, playerRating} = playerinfo
     const $ = cheerio.load(text);
-    playerInfo.profilePhoto = $('img.player-portrait').attr('src');
-    playerInfo.playerName = $('h1.header-masthead').text();
-    playerInfo.numberOfWins = $('p.masthead-detail.h4 span').text();
-    playerInfo.playerlevel = $('div.u-vertical-center').first().text();
-    playerInfo.playerRecommandLevel = $('div.u-center').first().text();
-    playerInfo.playerRating = $('div.u-align-center.h5').first().text();
+    let playerInfo = {
+        profilePhoto: $('img.player-portrait').attr('src'),
+        playerName: $('h1.header-masthead').text(),
+        numberOfWins: $('p.masthead-detail.h4 span').text(),
+        platform,
+        playerlevel: $('div.u-vertical-center').first().text(),
+        playerRecommandLevel: $('div.u-center').first().text(),
+        playerRating: $('div.u-align-center.h5').first().text()
+    };
 
     return playerInfo;
 }
@@ -59,7 +49,14 @@ bot.onText(/\/showMyInfo/, async (msg, match) => {
     const chatId = msg.chat.id;
     const fullText = await getPlayerInfo(url);
     const playerInfo = parsePlayerInfo(fullText);
-    bot.sendMessage(chatId, '플레이어 : ' + playerInfo.playerName + '\n' + playerInfo.numberOfWins + '\nlevel : ' + playerInfo.playerlevel + '\n경쟁전 점수 : ' + playerInfo.playerRating);
+    const pic_stream = request.get(playerInfo.profilePhoto).on('error', function(err) { console.log(err); });
+    bot.sendPhoto(chatId, pic_stream, {
+        caption: platform +' 플레이어 ' + playerInfo.playerName + '\n'
+    + playerInfo.numberOfWins
+    + '\n플레이어 레벨 ' + playerInfo.playerlevel
+    + '\n경쟁전 점수 ' + playerInfo.playerRating
+    + '\n추천 레벨 ' + playerInfo.playerRecommandLevel
+    });
 });
 
 bot.on('message', (msg) => {
